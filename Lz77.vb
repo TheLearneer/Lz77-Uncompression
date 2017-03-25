@@ -11,27 +11,23 @@ Module Lz77
         'converting string to byte array
         Dim bytearr As New List(Of Byte)
         Dim bytefinal As Byte()
-
+        'the actual conversion
         For i As Integer = 1 To Len(stringdata) Step 2
             bytearr.Add(CByte(Int32.Parse((Mid(stringdata, i, 2)), Globalization.NumberStyles.HexNumber)))
         Next
         bytefinal = bytearr.ToArray
-
         Return bytefinal
     End Function
 
     Public Function ByteArrayToHexString(ByRef bytedata As Byte()) As String
         Dim strcon As String = ""
-
         For i As Integer = 0 To (bytedata.Length - 1)
             strcon = strcon & Right("00" & (Hex(bytedata(i))), 2)
         Next
-
         Return strcon
-
     End Function
     
-    Public Function MyUncompress(ByRef CompressedHexstring As String) As String
+Public Function Lz77Uncompression(ByRef CompressedHexstring As String) As String
         'declaring necessary variables
         Dim inputbyte As Byte() = Hexstringtobytearray(CompressedHexstring)
         Dim sizeofcompression As Integer = Int32.Parse((ReverseHEX(Mid(CompressedHexstring, 2, 6))), Globalization.NumberStyles.HexNumber)
@@ -45,7 +41,6 @@ Module Lz77
         Dim data As Integer
         Dim length As Integer
         Dim backpos As Integer
-        Dim copypos As Integer
 
         'checking if the data provided is lz77 compressed or not....
         If inputbyte(0) <> &H10 Then
@@ -65,41 +60,36 @@ Module Lz77
                     data = ((inputbyte(headerposition + additionpostion) * (2 ^ 8)) Or inputbyte(headerposition + additionpostion + 1))
                     length = (data \ 4096) + 3
                     backpos = (data And &HFFF) + 1
-                    copypos = headerposition + additionpostion - backpos
 
                     'MsgBox("data - " & Hex(data))
-
+                    Dim postfrombeg As Integer
+                    postfrombeg = outputbyte.Count - backpos
+                    Dim backbuffer As New List(Of Byte)
                     'copying the data
-                    For j As Integer = 0 To length - 1
-                        Dim postfrombeg As Integer
 
-                        postfrombeg = outputbyte.Count - backpos
-
-                        outputbyte.Add(outputbyte.Item(postfrombeg))
+                    While (backbuffer.Count < length)
+                        backbuffer.Add(outputbyte(postfrombeg))
                         postfrombeg = postfrombeg + 1
 
-                        'MsgBox("repeat byte - " & Hex(outputbyte(postfrombeg)))
-
-                        If (outputbyte.ToArray.Length >= sizeofcompression) Then
-                            GoTo result
+                        If (postfrombeg >= outputbyte.Count) Then
+                            postfrombeg = outputbyte.Count - backpos
                         End If
+                    End While
+                    outputbyte.AddRange(backbuffer)
 
-                    Next
                     'doing this next line for skipping 2 compressed bytes
                     additionpostion = additionpostion + 2
 
                 Else 'this is the uncompressed byte and is to be copied directly
 
                     'MsgBox("single byte - " & Hex(inputbyte(headerposition + additionpostion)))
-                    If (outputbyte.ToArray.Length >= sizeofcompression) Then
+                    If (headerposition + additionpostion) >= inputbyte.Length Then
                         GoTo result
                     End If
 
                     outputbyte.Add(inputbyte(headerposition + additionpostion))
                     additionpostion = additionpostion + 1
-
-                    
-
+                  
                 End If
 
                 checkingnum = checkingnum / 2
@@ -110,9 +100,6 @@ Module Lz77
             bytedone = 0
         Loop
 
-
-
-
 result:
         Return ByteArrayToHexString(outputbyte.ToArray)
         Exit Function
@@ -121,6 +108,5 @@ Errorr:
         MsgBox("The data provided isnt Lz77 compressed")
         Return ""
     End Function
-
     
 End Module
