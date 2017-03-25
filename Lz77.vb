@@ -7,6 +7,30 @@ Imports System.Text
 
 Module Lz77
     
+    Public Function Hexstringtobytearray(ByRef stringdata As String) As Byte()
+        'converting string to byte array
+        Dim bytearr As New List(Of Byte)
+        Dim bytefinal As Byte()
+
+        For i As Integer = 1 To Len(stringdata) Step 2
+            bytearr.Add(CByte(Int32.Parse((Mid(stringdata, i, 2)), Globalization.NumberStyles.HexNumber)))
+        Next
+        bytefinal = bytearr.ToArray
+
+        Return bytefinal
+    End Function
+
+    Public Function ByteArrayToHexString(ByRef bytedata As Byte()) As String
+        Dim strcon As String = ""
+
+        For i As Integer = 0 To (bytedata.Length - 1)
+            strcon = strcon & Right("00" & (Hex(bytedata(i))), 2)
+        Next
+
+        Return strcon
+
+    End Function
+    
     Public Function MyUncompress(ByRef CompressedHexstring As String) As String
         'declaring necessary variables
         Dim inputbyte As Byte() = Hexstringtobytearray(CompressedHexstring)
