@@ -30,7 +30,7 @@ Module Lz77
 Public Function Lz77Uncompression(ByRef CompressedHexstring As String) As String
         'declaring necessary variables
         Dim inputbyte As Byte() = Hexstringtobytearray(CompressedHexstring)
-        Dim sizeofcompression As Integer = Int32.Parse((ReverseHEX(Mid(CompressedHexstring, 2, 6))), Globalization.NumberStyles.HexNumber)
+        Dim sizeofcompression As Integer = Int32.Parse((ReverseHEX(Mid(CompressedHexstring, 3, 6))), Globalization.NumberStyles.HexNumber)
         Dim outputbyte As New List(Of Byte)
         Dim headerposition As Integer = 4 'the position that shows the beginning of every block header
         Dim blockheaderbyte As Byte
@@ -89,7 +89,7 @@ Public Function Lz77Uncompression(ByRef CompressedHexstring As String) As String
 
                     outputbyte.Add(inputbyte(headerposition + additionpostion))
                     additionpostion = additionpostion + 1
-                  
+
                 End If
 
                 checkingnum = checkingnum / 2
@@ -108,5 +108,5 @@ Errorr:
         MsgBox("The data provided isnt Lz77 compressed")
         Return ""
     End Function
-    
+
 End Module
